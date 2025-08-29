@@ -7,7 +7,7 @@ export default function Index() {
         <SafeAreaProvider>
             <SafeAreaView>
                 <Text>Welcome screen</Text>
-                <Text>Welcome to copreneur</Text>
+                <Text>Welcome to default screen</Text>
                 <Link href={"/signup"} 
                 style={{
                     fontWeight: "bold",
