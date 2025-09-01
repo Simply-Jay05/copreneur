@@ -1,3 +1,4 @@
+
 import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../theme/color";
 
@@ -10,7 +11,7 @@ export default function Signup () {
                 <Text style={styles.brandDesc}>Where entrepreneurs collaborate with developers</Text>
             </View>
 
-            {/* {body group} */}
+            {/* body group */}
             <View>
                 <Text>Create an account</Text>
                 <TouchableOpacity>
