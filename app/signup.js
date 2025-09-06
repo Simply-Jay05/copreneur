@@ -11,6 +11,7 @@ export default function Signup () {
 
 
     return(
+    
         <View style={styles.wrapper}>
             {/* header group */}
             <View style={styles.header}>
@@ -87,6 +88,7 @@ export default function Signup () {
             </View>
             
         </View>
+
     );
 }
 
