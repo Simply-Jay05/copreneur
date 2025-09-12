@@ -13,7 +13,8 @@ const validationRules = yup.object({
     .matches(/[A-Z]/, "Password must conatin at least one uppercase letter")
     .matches(/[a-z]/, "Password must conatin at least one lowercase letter")
     .matches(/[!@#$%^&*]/, "Password must conatin at least one uppercase letter")
-    .required("Password is required")
+    .required("Password is required"),
+    passwordConfirmation: yup.string().required.oneOf([yup.ref("password"),null])
 });
 
 export default function Signup () {
