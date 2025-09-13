@@ -1,29 +1,57 @@
-
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { createUserWithEmailAndPassword, getAuth, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useFormik } from "formik";
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import * as yup from "yup";
+import { useState } from "react";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { auth, db } from "../config/firebase.secret";
 import { colors } from "../theme/color";
+import { signupValidation } from "../utils/signup-validation-schema";
 
-const validationRules = yup.object({
-    email: yup.string().email().required(),
-    password: yup
-    .string()
-    .min(8, "Password must be at least 8 characters long.")
-    .matches(/[A-Z]/, "Password must conatin at least one uppercase letter")
-    .matches(/[a-z]/, "Password must conatin at least one lowercase letter")
-    .matches(/[!@#$%^&*]/, "Password must conatin at least one uppercase letter")
-    .required("Password is required"),
-    passwordConfirmation: yup.string().required.oneOf([yup.ref("password"),null])
-});
 
 export default function Signup () {
+    const [isLoading,setIsLoading] = useState(false);
+    const authenticated = getAuth();
+
+    const router = useRouter();
+
     const {handleBlur, handleChange, handleSubmit, touched, errors, values} = useFormik({
-        initialValues: { email:"", password:"", passwordConfirmation:""},
-        onSubmit: () => {
-            console.log("form was submitted")
+        initialValues: { email:"", firstName:"", lastName: "", phoneNumber:"", password:"", passwordConfirmation:""},
+        onSubmit: async () => {
+            setIsLoading(true);
+
+            try {
+                // create a new user account 
+                const user = await createUserWithEmailAndPassword(auth,values.email,values.password);
+                setIsLoading(false); // stops ActivityIndicator
+
+                // update useer's profile
+                updateProfile(authenticated.currentUser, {
+                    displayName: `${values.firstName} ${values.lastName}`
+                });
+
+                // store user's data on database
+                setDoc(doc(db, "users", authenticated.currentUser.uid), {
+                    email: values.email,
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    phoneNumber: values.phoneNumber,
+                    createdAt: new Date().getTime(),
+                })
+
+                // redirect to home 
+                router.replace("/(tabs)")
+            } catch (error) {
+                Alert.alert(
+                    "Message",
+                    "An unknown error has occurewd",
+                    [{text: "Dismiss"}]
+                );
+                console.error(error);
+                setIsLoading(false);
+            }
         },
-        validationSchema: validationRules
+        validationSchema: signupValidation
     });
 
 return (
@@ -85,6 +113,48 @@ return (
 
                         <View>
                             <TextInput
+                            keyboardType="default"
+                            style={styles.input}
+                            placeholder="eg. john"
+                            // assign the current value of the textinput
+                            value={values.firstName}
+                            onChangeText={handleChange("firstName")}
+                            onBlur={handleBlur("firstName")} />
+
+                            { errors.firstName && touched.firstName &&
+                            <Text style={styles.errormsg}>{errors.firstName}</Text>}
+                        </View>
+
+                        <View>
+                            <TextInput
+                            keyboardType="default"
+                            style={styles.input}
+                            placeholder="eg. Adekule"
+                            // assign the current value of the textinput
+                            value={values.lastName}
+                            onChangeText={handleChange("lastName")}
+                            onBlur={handleBlur("lastName")} />
+
+                            { errors.lastName && touched.lastName &&
+                            <Text style={styles.errormsg}>{errors.lastName}</Text>}
+                        </View>
+
+                        <View>
+                            <TextInput
+                            keyboardType="phone-pad"
+                            style={styles.input}
+                            placeholder="eg. 0708888357"
+                            // assign the current value of the textinput
+                            value={values.phoneNumber}
+                            onChangeText={handleChange("phoneNumber")}
+                            onBlur={handleBlur("phoneNumber")} />
+
+                            { errors.phoneNumber && touched.phoneNumber &&
+                            <Text style={styles.errormsg}>{errors.phoneNumber}</Text>}
+                        </View>
+
+                        <View>
+                            <TextInput
                             secureTextEntry={true}
                             keyboardType="default"
                             style={styles.input}
@@ -114,7 +184,9 @@ return (
 
                         {!errors.passwordConfirmation && !errors.email && touched.passwordConfirmation && 
                         <TouchableOpacity onPress={handleSubmit} style={styles.signupBtn}>
-                            <Text style={styles.signInText}>Create Account</Text>
+                            {isLoading ?
+                            <ActivityIndicator size="large" color="white" /> :
+                            <Text style={styles.signInText}>Create Account</Text>}
                         </TouchableOpacity>}
                     </View>
 
