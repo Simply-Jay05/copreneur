@@ -7,12 +7,12 @@ const AuthProvider = ({children}) => {
     const [user,setUser] = useState(undefined);
     const auth = getAuth();
     
-    // get user;s authenticated state 
+    // get user's authenticated state 
     useEffect(() => {
         setUser(auth.currentUser);
     }, [])
     return (
-        <AuthContext.Provider value={{ user}}>
+        <AuthContext.Provider value={{user}}>
             {children}
         </AuthContext.Provider>
     )
